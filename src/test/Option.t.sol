@@ -14,8 +14,6 @@ contract OptionTest is BaseTest {
     address buyer;
     uint256 tokenId;
 
-    error NotSeller();
-
     function setUp() public {
         mockToken = new MockERC20();
         mockToken.mint(address(this), 100*10**mockToken.decimals());
@@ -78,5 +76,4 @@ contract OptionTest is BaseTest {
         option.exerciseOption("");
         assertEq(mockNft.ownerOf(tokenId), buyer);
     }
-
 }

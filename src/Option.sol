@@ -156,6 +156,7 @@ contract Option is IERC721Receiver {
         require(block.timestamp > expiry || buyer == address(0), "Option has not expired yet");
         // Transfer NFT back to seller
         IERC721(underlying).safeTransferFrom(address(this), msg.sender, tokenId);
+        nftDeposited = false;
     }
 
     /**

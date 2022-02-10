@@ -2,7 +2,7 @@
 
 Call options for any ERC721 conforming asset. 
 
-[NiftyOptions](https://niftyoptions.org/) is an on-chain options protocol for NFTs, but it currently only support the creation of put calls. While this minimizes downside risk for NFT holders, the needs of NFT speculators is left unmet. Thus, call options. 
+[NiftyOptions](https://niftyoptions.org/) is an on-chain options protocol for NFTs, but it currently only support the creation of puts. While this minimizes downside risk for NFT holders, the needs of NFT speculators is left unmet. Thus, call options. 
 
 Selling covered call options for NFTs allows sellers to generate a premium and guarantee a fixed upside from the current price. For call purchasers, these options are a way to speculate on NFT price movement for a small premium. 
 

@@ -63,12 +63,8 @@ contract Option is IERC721Receiver {
 
     event OptionExercised();
 
-    error notSeller();
-
     modifier onlySeller {
-        if (msg.sender != seller) {
-            revert notSeller();
-        }
+        require(msg.sender == seller, "only seller");
         _;
     }
 
@@ -93,15 +89,15 @@ contract Option is IERC721Receiver {
      * @param _underlying - underlying NFT address
      * @param _tokenId - ID of the token that the sender owns 
      */
-    function deposit(IERC721 _underlying, uint256 _tokenId) onlySeller external {
+    function deposit(address _underlying, uint256 _tokenId) onlySeller external {
         require(!nftDeposited, "can only deposit once");
         nftDeposited = true;
-        underlying = address(_underlying);
+        underlying = _underlying;
         tokenId = _tokenId;
 
         // Assumes revert on failed transfer
-        _underlying.safeTransferFrom(msg.sender, address(this), _tokenId);
-        emit NftDeposited(msg.sender, address(_underlying), _tokenId);
+        IERC721(_underlying).safeTransferFrom(msg.sender, address(this), _tokenId);
+        emit NftDeposited(msg.sender, _underlying, _tokenId);
     }
 
     /**
@@ -111,6 +107,7 @@ contract Option is IERC721Receiver {
      */
     function purchaseCall(bytes calldata _permitData) external {
         require(buyer == address(0), "option has already been purchased");
+        require(nftDeposited, "No NFT has been deposited yet");
 
         if (_permitData.length > 0) {
             PermitData memory permitData = abi.decode(_permitData, (PermitData));

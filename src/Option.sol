@@ -18,9 +18,6 @@ contract Option is IERC721Receiver {
     // flag whether NFT has been deposited to contract
     bool public nftDeposited;
 
-    /// @notice set to true when the Option is purchased
-    bool public optionFilled;
-
     /// @notice creator of the contract
     address public seller;
 
@@ -98,12 +95,12 @@ contract Option is IERC721Receiver {
      */
     function deposit(IERC721 _underlying, uint256 _tokenId) onlySeller external {
         require(!nftDeposited, "can only deposit once");
+        nftDeposited = true;
         underlying = address(_underlying);
         tokenId = _tokenId;
 
         // Assumes revert on failed transfer
         _underlying.safeTransferFrom(msg.sender, address(this), _tokenId);
-        nftDeposited = true;
         emit NftDeposited(msg.sender, address(_underlying), _tokenId);
     }
 
@@ -113,7 +110,7 @@ contract Option is IERC721Receiver {
      * @param _permitData - info for ERC20-Permit; can be empty byte if approve() was called
      */
     function purchaseCall(bytes calldata _permitData) external {
-        require(!optionFilled, "option has already been purchased");
+        require(buyer == address(0), "option has already been purchased");
 
         if (_permitData.length > 0) {
             PermitData memory permitData = abi.decode(_permitData, (PermitData));
@@ -126,7 +123,6 @@ contract Option is IERC721Receiver {
         IERC20(quoteToken).safeTransferFrom(msg.sender, seller, premium);
 
         // Update state
-        optionFilled = true;
         buyer = msg.sender;
         emit OptionPurchased(msg.sender);
     }
@@ -151,7 +147,7 @@ contract Option is IERC721Receiver {
         IERC20(quoteToken).safeTransferFrom(msg.sender, seller, strike);
 
         // Transfer underlying NFT to the buyer
-        IERC721(underlying).safeTransferFrom(address(this), buyer, tokenId);
+        IERC721(underlying).safeTransferFrom(address(this), msg.sender, tokenId);
 
         emit OptionExercised();
     }
@@ -161,7 +157,8 @@ contract Option is IERC721Receiver {
      */
     function closeOption() external onlySeller {
         require(block.timestamp > expiry || buyer == address(0), "Option has not expired yet");
-        IERC721(underlying).safeTransferFrom(address(this), seller, tokenId);
+        // Transfer NFT back to seller
+        IERC721(underlying).safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     /**
